@@ -67,23 +67,6 @@ class Expert(nn.Module):
         x = x @ self.ow
         return x
 
-class BigRouter(nn.Module):
-    
-    def __init__(self, dim: int, num_experts: int):
-        super().__init__()
-        self.dim = dim
-        self.num_experts = num_experts
-        self.gate1 = nn.Linear(self.dim, 1012, bias=False)
-        self.gate2 = nn.Linear(1012, self.num_experts, bias=False)
-        self.reset_parameters()
-
-    def reset_parameters(self) -> None:
-        init_normal_(self.gate1.weight, std=0.02)
-        init_normal_(self.gate2.weight, std=0.02)
-
-    def forward(self, x: Tensor) -> Tensor:
-        return self.gate2(self.gate1(x))
-
 class MoE(nn.Module):
 
     def __init__(
@@ -255,7 +238,7 @@ class AoE(nn.Module):
         self.fuel_dim = 4096
        
         for fuel in self.wander_expert_recipe:
-            self.wander_experts.append(ExpertNoRouter(dim, fuel * self.fuel_dim, self.dim4route))
+            self.wander_experts.append(ExpertAoE(dim, fuel * self.fuel_dim, self.dim4route))
 
         self.num_experts = len(self.wander_experts)
         
